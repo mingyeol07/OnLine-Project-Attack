@@ -55,7 +55,7 @@ public class Player2 : MonoBehaviour
     }
     private void Fire()
     {
-        if (Input.GetKeyDown(KeyCode.S))
+        if (Input.GetKeyDown(KeyCode.DownArrow))
         {
             Destroy(Instantiate(Bullet, BulletPos.transform.position, BulletPos.transform.rotation), 1f);
         }
