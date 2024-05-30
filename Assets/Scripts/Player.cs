@@ -4,11 +4,7 @@ using UnityEngine.InputSystem;
 
 public enum PlayerState
 {
-    Idle,
-    Move,
-    Attack,
-    Block,
-    
+    Move, Block, 
 }
 
 public class Player : MonoBehaviour
@@ -25,7 +21,14 @@ public class Player : MonoBehaviour
     private float horizontal;
     private float vertical;
 
+    private readonly int HashAttack = Animator.StringToHash("Attack");
     private readonly int HashMoveAttack = Animator.StringToHash("MoveAttack");
+    private readonly int HashMoving = Animator.StringToHash("Moving");
+
+    private bool isJumping;
+    private bool isMoveing;
+    private bool isBlocking;
+    private bool isTargeting;
 
     private void Start()
     {
@@ -46,35 +49,32 @@ public class Player : MonoBehaviour
 
     private void Inputs()
     {
-        horizontal = Input.GetAxis("Horizontal"); // A, D 
-        vertical = Input.GetAxis("Vertical"); // W, S 
-        if (Input.GetKeyDown(KeyCode.E)) MoveAttack();
-        if (Input.GetKeyDown(KeyCode.Q)) PowerUp();
-    }
+        horizontal = Input.GetAxisRaw("Horizontal"); // A, D 
+        vertical = Input.GetAxisRaw("Vertical"); // W, S 
 
-    private void PowerUp()
-    {
+        isBlocking =  Input.GetKey(KeyCode.Mouse1);
+        isTargeting = Input.GetKey(KeyCode.LeftControl);
+        if (Input.GetKey(KeyCode.Mouse1)) Blocking();
+        if (Input.GetKey(KeyCode.LeftControl)) Targeting();
 
-    }
-
-    private void MoveAttack()
-    {
-        animator.SetTrigger("Trigger");
+        if (Input.GetKeyDown(KeyCode.E)) Skill1();
+        if (Input.GetKeyDown(KeyCode.Q)) Skill2();
+        if (Input.GetKeyDown(KeyCode.Mouse0)) Attack();
+        if (Input.GetKeyDown(KeyCode.LeftShift)) Dash();
+        if (Input.GetKeyDown(KeyCode.Space)) Jump();
     }
 
     private void SetAnimatorParameter()
     {
-        if (moveDirection != Vector3.zero) animator.SetBool("Moving", true);
-        else animator.SetBool("Moving", false);
+        isMoveing = moveDirection != Vector3.zero;
+        animator.SetBool(HashMoving, isMoveing);
     }
 
     private void MoveRotate()
     {
         // 이동방향으로 회전
         if (moveDirection != Vector3.zero)
-        {
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(moveDirection), Time.deltaTime * turnSpeed);
-        }
     }
 
     private void SetDirection()
@@ -93,5 +93,41 @@ public class Player : MonoBehaviour
 
         // 입력에 따라 이동 방향 계산
         moveDirection = forward * vertical + right * horizontal;
+    }
+
+    private void Targeting()
+    {
+
+    }
+
+    private void Jump()
+    {
+
+    }
+
+    private void Dash()
+    {
+
+    }
+
+    private void Skill1()
+    {
+        // MoveAttakc, RangeAttack
+        animator.SetTrigger(HashMoveAttack);
+    }
+
+    private void Skill2()
+    {
+        // power Up
+    }
+
+    private void Blocking()
+    {
+
+    }
+
+    private void Attack()
+    {
+
     }
 }
