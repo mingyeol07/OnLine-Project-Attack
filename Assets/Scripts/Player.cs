@@ -78,6 +78,8 @@ public class Player : MonoBehaviour
     {
         animator.SetBool(HashMoving, isMoveing);
         animator.SetBool(HashBlock, isBlocking);
+
+        
     }
 
     private void MoveRotate()
@@ -138,8 +140,8 @@ public class Player : MonoBehaviour
 
         if (isMoveing && isTargeting)
         {
-            animator.SetFloat(HashVelocityX, moveDirection.x);
-            animator.SetFloat(HashVelocityZ, moveDirection.z);
+            animator.SetInteger(HashVelocityZ, (int)vertical);
+            animator.SetInteger(HashVelocityX, (int)horizontal);
 
             Vector3 lookPlayerDir = transform.position - otherPlayerColl[1].transform.position;
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lookPlayerDir), Time.deltaTime * turnSpeed);
@@ -147,7 +149,7 @@ public class Player : MonoBehaviour
         }
         else if (isMoveing)
         {
-            animator.SetFloat(HashVelocityZ, moveDirection.z);
+            animator.SetInteger(HashVelocityZ, Mathf.Abs((int)vertical));
 
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(moveDirection), Time.deltaTime * turnSpeed);
 
@@ -156,7 +158,8 @@ public class Player : MonoBehaviour
 
     private Collider[] GetOtherPlayerColl()
     {
-        return Physics.OverlapSphere(transform.position, playerDetectedRange, playerMask);
+        Collider[] colliders = Physics.OverlapSphere(transform.position, playerDetectedRange, playerMask);
+        return colliders;
     }
 
     private void Attack()
