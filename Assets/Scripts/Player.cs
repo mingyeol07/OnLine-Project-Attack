@@ -1,16 +1,15 @@
-using System.Linq;
-using Unity.XR.Oculus.Input;
+using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 
 public enum PlayerState
 {
-    Move, Block, 
+    Idle, Blocking, invincibility
 }
 
 public class Player : MonoBehaviour
 {
+    public PlayerState state;
+
     private Rigidbody rigid;
     private Animator animator;
     [SerializeField] private Camera mainCam;
@@ -18,29 +17,41 @@ public class Player : MonoBehaviour
     [SerializeField] private float jumpForce;
     [SerializeField] private float turnSpeed;
     [SerializeField] private LayerMask playerMask;
-    [SerializeField] private float playerDetectedRange;
+    [SerializeField] private BoxCollider swordCollider;
+    [SerializeField] private BoxCollider shieldCollider;
     private Vector3 moveDirection;
 
     private float horizontal;
     private float vertical;
 
-    private readonly int HashTarget = Animator.StringToHash("Targeting");
+    private bool isAttack;
+    private bool isComboAttack;
+    private bool isJump;
+    private bool isMove;
+    private bool isBlock;
+    private bool isDash;
+
+    #region hashs
     private readonly int HashVelocityX = Animator.StringToHash("Velocity X");
     private readonly int HashVelocityZ = Animator.StringToHash("Velocity Z");
 
     private readonly int HashMoving = Animator.StringToHash("Moving");
     private readonly int HashBlock = Animator.StringToHash("Blocking");
+    private readonly int HashDash = Animator.StringToHash("Dash");
 
     private readonly int HashAttack = Animator.StringToHash("Attack");
+    private readonly int HashComboAttack = Animator.StringToHash("ComboAttack");
+    private readonly int HashComboAttack2 = Animator.StringToHash("ComboAttack2");
     private readonly int HashMoveAttack = Animator.StringToHash("MoveAttack");
     private readonly int HashPowerUpAttack = Animator.StringToHash("PowerUpAttack");
     private readonly int HashBlockAttack = Animator.StringToHash("BlockAttack");
     private readonly int HashRushAttack = Animator.StringToHash("RushAttack");
+    #endregion
 
-    private bool isJumping;
-    private bool isMoveing;
-    private bool isBlocking;
-    private bool isTargeting;
+    private void Awake()
+    {
+        mainCam = Camera.main;
+    }
 
     private void Start()
     {
@@ -54,6 +65,8 @@ public class Player : MonoBehaviour
 
         SetDirection();
 
+        SetIdleState();
+
         MoveRotate();
         
         SetAnimatorParameter();
@@ -64,33 +77,33 @@ public class Player : MonoBehaviour
         horizontal = Input.GetAxisRaw("Horizontal"); // A, D 
         vertical = Input.GetAxisRaw("Vertical"); // W, S 
 
-        isBlocking =  Input.GetKey(KeyCode.Mouse1);
-        if (isBlocking) Blocking();
+        isBlock =  Input.GetKey(KeyCode.Mouse1);
 
-        if (Input.GetKeyDown(KeyCode.E)) Skill1();
-        if (Input.GetKeyDown(KeyCode.Q)) Skill2();
-        if (Input.GetKeyDown(KeyCode.Mouse0)) Attack();
-        if (Input.GetKeyDown(KeyCode.LeftShift)) Dash();
-        if (Input.GetKeyDown(KeyCode.Space)) Jump();
+        if (Input.GetKeyDown(KeyCode.E) && !isAttack) Skill1();
+        if (Input.GetKeyDown(KeyCode.Q) && !isAttack) Skill2();
+        if (Input.GetKeyDown(KeyCode.Mouse0) && !isBlock) Attack();
+        if (Input.GetKeyDown(KeyCode.LeftShift) && !isDash) Dash();
+        //if (Input.GetKeyDown(KeyCode.Space) && !isJump) Jump();
     }
 
     private void SetAnimatorParameter()
     {
-        animator.SetBool(HashMoving, isMoveing);
-        animator.SetBool(HashBlock, isBlocking);
+        animator.SetBool(HashMoving, isMove);
+        animator.SetBool(HashBlock, isBlock);
 
-        
+        if (isBlock)
+        {
+            animator.SetFloat(HashVelocityX, horizontal, 0.1f, Time.deltaTime);
+            animator.SetFloat(HashVelocityZ, vertical, 0.1f, Time.deltaTime);
+        }
     }
 
     private void MoveRotate()
     {
-        // 이동방향으로 회전
-        if (isMoveing && !isBlocking)
+        if (isMove && !isAttack && !isDash)
         {
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(moveDirection), Time.deltaTime * turnSpeed);
-
         }
-            
     }
 
     private void SetDirection()
@@ -109,61 +122,128 @@ public class Player : MonoBehaviour
 
         // 입력에 따라 이동 방향 계산
         moveDirection = forward * vertical + right * horizontal;
-        isMoveing = moveDirection != Vector3.zero;
+        isMove = moveDirection != Vector3.zero && !isDash;
     }
 
-    private void Jump()
+    private void SetIdleState()
     {
-
+        if(isDash)
+        {
+            SetState(PlayerState.invincibility);
+        }
+        else if (!isBlock)
+        {
+            SetState(PlayerState.Idle);
+            shieldCollider.enabled = false;
+        }
     }
 
     private void Dash()
     {
-
+        isDash = true;
+        SetState(PlayerState.invincibility);
+        animator.SetTrigger(HashDash);
     }
 
+    #region Skills
     private void Skill1()
     {
-        // MoveAttakc, RangeAttack
-        animator.SetTrigger(HashMoveAttack);
+        isAttack = true;
+
+        if (!isBlock)
+        {
+            Skill_MoveAttack();
+        }
+        else
+        {
+            Skill_RushAttack();
+        }
     }
 
     private void Skill2()
     {
-        // power Up
-    }
+        isAttack = true;
 
-    private void Blocking()
-    {
-        Collider[] otherPlayerColl = GetOtherPlayerColl();
-        isTargeting = otherPlayerColl.Length > 1;
-
-        if (isMoveing && isTargeting)
+        if (!isBlock)
         {
-            animator.SetInteger(HashVelocityZ, (int)vertical);
-            animator.SetInteger(HashVelocityX, (int)horizontal);
-
-            Vector3 lookPlayerDir = transform.position - otherPlayerColl[1].transform.position;
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(lookPlayerDir), Time.deltaTime * turnSpeed);
-
+            Skill_PowerUp();
         }
-        else if (isMoveing)
+        else
         {
-            animator.SetInteger(HashVelocityZ, Mathf.Abs((int)vertical));
-
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(moveDirection), Time.deltaTime * turnSpeed);
-
+            Skill_BlockAttack();
         }
     }
 
-    private Collider[] GetOtherPlayerColl()
+    private void Skill_MoveAttack()
     {
-        Collider[] colliders = Physics.OverlapSphere(transform.position, playerDetectedRange, playerMask);
-        return colliders;
+        animator.SetTrigger(HashMoveAttack);
     }
+
+    private void Skill_PowerUp()
+    {
+        animator.SetTrigger(HashPowerUpAttack);
+    }
+
+    private void Skill_RushAttack()
+    {
+        animator.SetTrigger(HashRushAttack);
+    }
+
+    private void Skill_BlockAttack()
+    {
+        animator.SetTrigger(HashBlockAttack);
+    }
+    #endregion
 
     private void Attack()
     {
-        animator.SetTrigger(HashAttack);
+        if (isComboAttack)
+        {
+            animator.SetTrigger(HashComboAttack2);
+        }
+        else if (isAttack)
+        {
+            isComboAttack = true;
+            animator.SetTrigger(HashComboAttack);
+        }
+        else
+        {
+            isAttack = true;
+            animator.SetTrigger(HashAttack);
+        }
+    }
+
+    #region animation event
+    private void SetBlockState()
+    {
+        SetState(PlayerState.Blocking);
+        shieldCollider.enabled = true;
+    }
+    private void AttackExit()
+    {
+        isAttack = false;
+        isComboAttack = false;
+
+        swordCollider.enabled = false;
+        animator.ResetTrigger(HashComboAttack2);
+    }
+    private void DashExit()
+    {
+        isDash = false;
+        SetState(PlayerState.Idle);
+    }
+    private void SetSwordColliderActive(int _bool)
+    {
+        swordCollider.enabled = _bool == 1 ? true : false;
+    }
+    private void SetShieldColliderActive(int _bool)
+    {
+        shieldCollider.enabled = _bool == 1 ? true : false;
+    }
+    #endregion
+
+    private void SetState(PlayerState setState)
+    {
+        state = setState;
     }
 }
