@@ -16,6 +16,7 @@ public class Player : MonoBehaviour
 
     [SerializeField] private float jumpForce;
     [SerializeField] private float turnSpeed;
+    [SerializeField] private float moveSpeed;
     [SerializeField] private LayerMask playerMask;
     [SerializeField] private BoxCollider swordCollider;
     [SerializeField] private BoxCollider shieldCollider;
@@ -67,7 +68,7 @@ public class Player : MonoBehaviour
 
         SetIdleState();
 
-        MoveRotate();
+        Move();
         
         SetAnimatorParameter();
     }
@@ -98,11 +99,12 @@ public class Player : MonoBehaviour
         }
     }
 
-    private void MoveRotate()
+    private void Move()
     {
         if (isMove && !isAttack && !isDash)
         {
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(moveDirection), Time.deltaTime * turnSpeed);
+            rigid.velocity = moveDirection * 5f;
         }
     }
 
