@@ -17,6 +17,7 @@ public class Player : MonoBehaviour
     [SerializeField] private float jumpForce;
     [SerializeField] private float turnSpeed;
     [SerializeField] private float moveSpeed;
+    [SerializeField] private float dashSpeed;
     [SerializeField] private LayerMask playerMask;
     [SerializeField] private BoxCollider swordCollider;
     [SerializeField] private BoxCollider shieldCollider;
@@ -33,9 +34,6 @@ public class Player : MonoBehaviour
     private bool isDash;
 
     #region hashs
-    private readonly int HashVelocityX = Animator.StringToHash("Velocity X");
-    private readonly int HashVelocityZ = Animator.StringToHash("Velocity Z");
-
     private readonly int HashMoving = Animator.StringToHash("Moving");
     private readonly int HashBlock = Animator.StringToHash("Blocking");
     private readonly int HashDash = Animator.StringToHash("Dash");
@@ -91,20 +89,22 @@ public class Player : MonoBehaviour
     {
         animator.SetBool(HashMoving, isMove);
         animator.SetBool(HashBlock, isBlock);
-
-        if (isBlock)
-        {
-            animator.SetFloat(HashVelocityX, horizontal, 0.1f, Time.deltaTime);
-            animator.SetFloat(HashVelocityZ, vertical, 0.1f, Time.deltaTime);
-        }
     }
 
     private void Move()
     {
-        if (isMove && !isAttack && !isDash)
+        if (isDash)
+        {
+            rigid.AddForce(transform.forward * dashSpeed);
+        }
+        else if (isMove)
         {
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(moveDirection), Time.deltaTime * turnSpeed);
-            rigid.velocity = moveDirection * 5f;
+            rigid.velocity = moveDirection * moveSpeed;
+        }
+        else if (!isMove)
+        {
+            rigid.velocity = Vector3.zero;
         }
     }
 
@@ -124,7 +124,7 @@ public class Player : MonoBehaviour
 
         // 입력에 따라 이동 방향 계산
         moveDirection = forward * vertical + right * horizontal;
-        isMove = moveDirection != Vector3.zero && !isDash;
+        isMove = moveDirection != Vector3.zero && !isDash && !isAttack;
     }
 
     private void SetIdleState()
@@ -145,6 +145,7 @@ public class Player : MonoBehaviour
         isDash = true;
         SetState(PlayerState.invincibility);
         animator.SetTrigger(HashDash);
+        rigid.velocity = Vector3.zero;
     }
 
     #region Skills
@@ -233,6 +234,7 @@ public class Player : MonoBehaviour
     {
         isDash = false;
         SetState(PlayerState.Idle);
+        rigid.velocity = Vector3.zero;
     }
     private void SetSwordColliderActive(int _bool)
     {

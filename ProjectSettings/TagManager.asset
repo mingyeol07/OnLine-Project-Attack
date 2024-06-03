@@ -4,9 +4,8 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Ground
-  - Bullet
-  - Collide
+  - Shield
+  - Sword
   layers:
   - Default
   - TransparentFX
