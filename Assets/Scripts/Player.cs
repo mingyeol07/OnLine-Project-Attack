@@ -22,6 +22,7 @@ public class Player : MonoBehaviour
     [SerializeField] private BoxCollider swordCollider;
     [SerializeField] private BoxCollider shieldCollider;
     private Vector3 moveDirection;
+    private Vector3 dashDirection;
 
     private float horizontal;
     private float vertical;
@@ -95,7 +96,8 @@ public class Player : MonoBehaviour
     {
         if (isDash)
         {
-            rigid.AddForce(transform.forward * dashSpeed);
+            transform.rotation = Quaternion.LookRotation(dashDirection);
+            rigid.velocity = dashDirection * dashSpeed;
         }
         else if (isMove)
         {
@@ -145,6 +147,7 @@ public class Player : MonoBehaviour
         isDash = true;
         SetState(PlayerState.invincibility);
         animator.SetTrigger(HashDash);
+        dashDirection = moveDirection;
         rigid.velocity = Vector3.zero;
     }
 
