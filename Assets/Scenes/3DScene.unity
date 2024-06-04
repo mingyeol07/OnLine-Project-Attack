@@ -1678,7 +1678,8 @@ MonoBehaviour:
   mainCam: {fileID: 0}
   jumpForce: 5
   turnSpeed: 20
-  moveSpeed: 6
+  runSpeed: 4
+  walkSpeed: 2
   dashSpeed: 6
   playerMask:
     serializedVersion: 2

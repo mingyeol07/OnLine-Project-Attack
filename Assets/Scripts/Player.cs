@@ -16,7 +16,8 @@ public class Player : MonoBehaviour
 
     [SerializeField] private float jumpForce;
     [SerializeField] private float turnSpeed;
-    [SerializeField] private float moveSpeed;
+    [SerializeField] private float runSpeed;
+    [SerializeField] private float walkSpeed;
     [SerializeField] private float dashSpeed;
     [SerializeField] private LayerMask playerMask;
     [SerializeField] private BoxCollider swordCollider;
@@ -74,16 +75,19 @@ public class Player : MonoBehaviour
 
     private void Inputs()
     {
-        horizontal = Input.GetAxisRaw("Horizontal"); // A, D 
-        vertical = Input.GetAxisRaw("Vertical"); // W, S 
+        if (!isAttack && !isDash)
+        {
+            horizontal = Input.GetAxisRaw("Horizontal"); // A, D 
+            vertical = Input.GetAxisRaw("Vertical"); // W, S 
 
-        isBlock =  Input.GetKey(KeyCode.Mouse1);
-
-        if (Input.GetKeyDown(KeyCode.E) && !isAttack) Skill1();
-        if (Input.GetKeyDown(KeyCode.Q) && !isAttack) Skill2();
-        if (Input.GetKeyDown(KeyCode.Mouse0) && !isBlock) Attack();
-        if (Input.GetKeyDown(KeyCode.LeftShift) && !isDash) Dash();
-        //if (Input.GetKeyDown(KeyCode.Space) && !isJump) Jump();
+            isBlock = Input.GetKey(KeyCode.Mouse1);
+            
+            if (Input.GetKeyDown(KeyCode.E)) Skill1();
+            if (Input.GetKeyDown(KeyCode.Q)) Skill2();
+            if (Input.GetKeyDown(KeyCode.Mouse0) && !isBlock) Attack();
+            if (Input.GetKeyDown(KeyCode.LeftShift)) Dash();
+            //if (Input.GetKeyDown(KeyCode.Space) && !isJump) Jump();
+        }
     }
 
     private void SetAnimatorParameter()
@@ -102,7 +106,7 @@ public class Player : MonoBehaviour
         else if (isMove)
         {
             transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(moveDirection), Time.deltaTime * turnSpeed);
-            rigid.velocity = moveDirection * moveSpeed;
+            rigid.velocity = moveDirection * (isBlock ? walkSpeed : runSpeed);
         }
         else if (!isMove)
         {
@@ -112,21 +116,28 @@ public class Player : MonoBehaviour
 
     private void SetDirection()
     {
-        // 카메라기준 전방 벡터와 우측 벡터
-        Vector3 forward = mainCam.transform.forward;
-        Vector3 right = mainCam.transform.right;
+        if(vertical != 0 || horizontal != 0)
+        {
+            // 카메라기준 전방 벡터와 우측 벡터
+            Vector3 forward = mainCam.transform.forward;
+            Vector3 right = mainCam.transform.right;
 
-        // Y값 제거 (수평 이동만 고려)
-        forward.y = 0;
-        right.y = 0;
+            // Y값 제거 (수평 이동만 고려)
+            forward.y = 0;
+            right.y = 0;
 
-        // 벡터 정규화 (길이 1로 만들기)
-        forward.Normalize();
-        right.Normalize();
+            // 벡터 정규화 (길이 1로 만들기)
+            forward.Normalize();
+            right.Normalize();
 
-        // 입력에 따라 이동 방향 계산
-        moveDirection = forward * vertical + right * horizontal;
-        isMove = moveDirection != Vector3.zero && !isDash && !isAttack;
+            // 입력에 따라 이동 방향 계산
+            moveDirection = forward * vertical + right * horizontal;
+            isMove = moveDirection != Vector3.zero && !isDash && !isAttack;
+        }
+        else
+        {
+            isMove = false;
+        }
     }
 
     private void SetIdleState()
