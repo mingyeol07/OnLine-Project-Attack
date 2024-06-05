@@ -5,35 +5,29 @@ using System.Collections.Generic;
 // # Unity
 using UnityEngine;
 
+using BackEnd;
+using UnityEngine.UI;
+
 public class BackendLogin : MonoBehaviour
 {
-    private static BackendLogin _instance = null;
+    [SerializeField] private Button btn_guestLogin;
 
-    public static BackendLogin Instance
+    private void Awake()
     {
-        get
-        {
-            if (_instance == null)
-            {
-                _instance = new BackendLogin();
+        btn_guestLogin.onClick.AddListener(() => Login());   
+    }
+
+    private void Login()
+    {
+        SendQueue.Enqueue(
+            Backend.BMember.GuestLogin,
+            "게스트 로그인으로 로그인함",
+            (callback) => {
+                if (callback.IsSuccess())
+                {
+                    Debug.Log("게스트 로그인에 성공했습니다");
+                }
             }
-
-            return _instance;
-        }
-    }
-
-    public void CustomSignUp(string id, string pw)
-    {
-        // Step 2. 회원가입 구현하기 로직
-    }
-
-    public void CustomLogin(string id, string pw)
-    {
-        // Step 3. 로그인 구현하기 로직
-    }
-
-    public void UpdateNickname(string nickname)
-    {
-        // Step 4. 닉네임 변경 구현하기 로직
+        );
     }
 }
