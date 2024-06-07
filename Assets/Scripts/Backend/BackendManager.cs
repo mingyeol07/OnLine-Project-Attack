@@ -4,10 +4,39 @@ using UnityEngine;
 
 // 뒤끝 SDK namespace 추가
 using BackEnd;
+using System;
 
 public class BackendManager : MonoBehaviour
 {
-    void Start()
+
+
+    void Awake()
+    {
+        DontDestroyOnLoad(gameObject);
+
+        BackendSetup();
+    }
+
+    private void Update()
+    {
+        if(Backend.IsInitialized)
+        {
+            Backend.AsyncPoll();
+        }
+
+        if (SendQueue.IsInitialize == false)
+        {
+            // SendQueue 초기화
+            SendQueue.StartSendQueue(true, ExceptionHandler);
+        }
+
+        void ExceptionHandler(Exception e)
+        {
+            // 예외 처리
+        }
+    }
+
+    private void BackendSetup()
     {
         var bro = Backend.Initialize(true); // 뒤끝 초기화
 
