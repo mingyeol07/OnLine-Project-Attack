@@ -8,4 +8,10 @@ EditorBuildSettings:
   - enabled: 0
     path: Assets/Scenes/Scene 1.unity
     guid: 2cda990e2423bbf4892e6590ba056729
+  - enabled: 0
+    path: Assets/Dr. Go/Scene/Logo.unity
+    guid: b889a6cf0f658bb49bf395c5b7bc4b5b
+  - enabled: 0
+    path: Assets/Dr. Go/Scene/Login.unity
+    guid: 1e80795bfb3bb2440b9edbb29ebbc5d7
   m_configObjects: {}
