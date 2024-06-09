@@ -6,9 +6,10 @@ using System.Runtime.CompilerServices;
 
 // # Unity
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class LoginUIManager : MonoBehaviour
+public class LoginUI : MonoBehaviour
 {
     [SerializeField] private TMPro.TMP_InputField inputField_ID;
     [SerializeField] private TMPro.TMP_InputField inputField_PW;
@@ -34,6 +35,7 @@ public class LoginUIManager : MonoBehaviour
     private void OnClickLogin()
     {
         BackendLogin.Instance.CustomLogin(txt_ID, txt_PW);
+        SceneManager.LoadScene(1);
     }
 
     private void OnClickSignUp()
