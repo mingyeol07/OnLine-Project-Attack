@@ -2,6 +2,8 @@
 using BackEnd;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
+
 
 // # Unity
 using UnityEngine;
@@ -80,5 +82,34 @@ public class BackendRank : MonoBehaviour
         }
 
         Debug.Log("랭킹 삽입에 성공했습니다. : " + rankBro);
+    }
+
+    public void RankGet()
+    {
+        string rankUUID = "13b99a40-2673-11ef-bba1-773b0f3e93b1"; // 예시 : "4088f640-693e-11ed-ad29-ad8f0c3d4c70"
+        var bro = Backend.URank.User.GetRankList(rankUUID);
+
+        if (bro.IsSuccess() == false)
+        {
+            Debug.LogError("랭킹 조회중 오류가 발생했습니다. : " + bro);
+            return;
+        }
+        Debug.Log("랭킹 조회에 성공했습니다. : " + bro);
+
+        Debug.Log("총 랭킹 등록 유저 수 : " + bro.GetFlattenJSON()["totalCount"].ToString());
+
+        /*
+        foreach (LitJson.JsonData jsonData in bro.FlattenRows())
+        {
+            StringBuilder info = new StringBuilder();
+
+            info.AppendLine("순위 : " + jsonData["rank"].ToString());
+            info.AppendLine("닉네임 : " + jsonData["nickname"].ToString());
+            info.AppendLine("점수 : " + jsonData["score"].ToString());
+            info.AppendLine("gamerInDate : " + jsonData["gamerInDate"].ToString());
+            info.AppendLine("정렬번호 : " + jsonData["index"].ToString());
+            info.AppendLine();
+            Debug.Log(info);
+        }*/
     }
 }
