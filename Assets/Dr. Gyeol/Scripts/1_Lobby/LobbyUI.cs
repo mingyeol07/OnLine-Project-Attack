@@ -15,11 +15,11 @@ public class LobbyUI : MonoBehaviour
 
     private void Start()
     {
-        BackendGameData.Instance.GameDataGet();
+        BackendUserData.Instance.GetUserData();
 
-        BackendRank.Instance.RankInsert(BackendGameData.userData.winCount);
+        BackendRank.Instance.InsertRank(BackendUserData.userData.winCount);
         nickName.text = Backend.UserNickName;
-        winCount.text = "Win : " + BackendGameData.userData.winCount.ToString();
-        level.text = "Level : " + BackendGameData.userData.level.ToString();
+        winCount.text = "Win : " + BackendUserData.userData.winCount.ToString();
+        level.text = "Level : " + BackendUserData.userData.level.ToString();
     }
 }

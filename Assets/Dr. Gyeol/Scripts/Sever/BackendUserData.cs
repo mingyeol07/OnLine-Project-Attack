@@ -12,17 +12,17 @@ public class UserData
     public int ranking = 0;
 }
 
-public class BackendGameData
+public class BackendUserData
 {
-    private static BackendGameData _instance = null;
+    private static BackendUserData _instance = null;
 
-    public static BackendGameData Instance
+    public static BackendUserData Instance
     {
         get
         {
             if (_instance == null)
             {
-                _instance = new BackendGameData();
+                _instance = new BackendUserData();
             }
 
             return _instance;
@@ -33,7 +33,7 @@ public class BackendGameData
 
     private string gameDataRowInDate = string.Empty;
 
-    public void GameDataInsert()
+    public void InsertUserData()
     {
         if (userData == null)
         {
@@ -66,7 +66,7 @@ public class BackendGameData
         }
     }
 
-    public void GameDataGet()
+    public void GetUserData()
     {
         Debug.Log("게임 정보 조회 함수를 호출합니다.");
         var bro = Backend.GameData.GetMyData("USER_DATA", new Where());
@@ -107,7 +107,7 @@ public class BackendGameData
         userData.winCount += 1;
     }
 
-    public void GameDataUpdate()
+    public void UpdataUserData()
     {
         if (userData == null)
         {

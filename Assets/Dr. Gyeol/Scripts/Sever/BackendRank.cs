@@ -25,7 +25,7 @@ public class BackendRank : MonoBehaviour
         }
     }
 
-    public void RankInsert(int score)
+    public void InsertRank(int score)
     {
         // [변경 필요] '복사한 UUID 값'을 '뒤끝 콘솔 > 랭킹 관리'에서 생성한 랭킹의 UUID값으로 변경해주세요.  
         string rankUUID = "13b99a40-2673-11ef-bba1-773b0f3e93b1"; // 예시 : "4088f640-693e-11ed-ad29-ad8f0c3d4c70"
@@ -84,7 +84,7 @@ public class BackendRank : MonoBehaviour
         Debug.Log("랭킹 삽입에 성공했습니다. : " + rankBro);
     }
 
-    public void RankGet()
+    public void GetRank()
     {
         string rankUUID = "13b99a40-2673-11ef-bba1-773b0f3e93b1"; // 예시 : "4088f640-693e-11ed-ad29-ad8f0c3d4c70"
         var bro = Backend.URank.User.GetRankList(rankUUID);
